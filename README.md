@@ -1,3 +1,7 @@
+# Original project by crazyklatsch
+
+This is a fork I created to fix an issue with pre-2019 versions of the headset, all rights goes to crazyklatsch
+
 # Arctis7_BatteryReader
 A battery reader for the Steelseries Arctis7 Wireless Headset. It polls the percentage and displayes it as a tray icon.
 
