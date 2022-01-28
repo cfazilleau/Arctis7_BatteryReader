@@ -34,186 +34,184 @@ using System.Windows.Forms;
 
 namespace SteelSeries_Arctis7_BatteryReader
 {
-    class Arctis7_BatteryReader
-    {
-        public static bool exit = false;
-        public static bool refresh = false;
+	class Arctis7_BatteryReader
+	{
+		public static bool exit = false;
+		public static bool refresh = false;
 
-        public const byte batteryAddress = 0x18; //->Battery(0 - 100)
-        //public const byte muteStatus = 0x30; //->Mute status(0-Not muted, 1-Muted)
+		public const byte batteryAddress = 0x18; //->Battery(0 - 100)
+												 //public const byte muteStatus = 0x30; //->Mute status(0-Not muted, 1-Muted)
 
-        private NotifyIcon icon;
-        private Icon[] chargeIcons;
+		private NotifyIcon icon;
+		private Icon[] chargeIcons;
 
-        private HIDDev dev = null;
-        private System.Timers.Timer updateTimer;
-
-
-        static void Main(string[] args)
-        {
-            Arctis7_BatteryReader reader = new Arctis7_BatteryReader();
-            if (!exit)
-                Application.Run();
-            while (!exit)
-            {
-                Thread.Sleep(500);
-            }
-        }
-
-        Arctis7_BatteryReader()
-        {
-            this.InitIcons();
-            this.InitHIDDev();
-
-            // Start update Timer
-            this.updateTimer = new System.Timers.Timer(5000);
-            this.updateTimer.Elapsed += this.OnUpdate;
-            this.updateTimer.AutoReset = true;
-            this.updateTimer.Enabled = true;
-        }
-
-        ~Arctis7_BatteryReader()
-        {
-            this.updateTimer.Stop();
-            this.updateTimer.Dispose();
-            this.icon.Visible = false;
-            this.icon.Dispose();
-        }
-
-        private void OnUpdate(Object source, ElapsedEventArgs e)
-        {
-            //Get current batteryCharge
-            byte batteryCharge = 0;
-            this.ReadBattery(out batteryCharge);
+		private HIDDev dev = null;
+		private System.Timers.Timer updateTimer;
 
 
-            //Update Tray Icon
-            if (batteryCharge >= 0 && batteryCharge <= 100)
-            {
-                this.icon.Icon = this.chargeIcons[batteryCharge];
-            }
-        }
+		static void Main(string[] args)
+		{
+			Arctis7_BatteryReader reader = new Arctis7_BatteryReader();
+			if (!exit)
+				Application.Run();
+			while (!exit)
+			{
+				Thread.Sleep(500);
+			}
+		}
 
-        private bool ReadBattery(out byte batteryCharge)
-        {
-            batteryCharge = 0;
-            try
-            {
-                // Set message to send
-                byte[] report = new byte[32];
-                report[0] = 0x06;
-                report[1] = batteryAdress;
+		Arctis7_BatteryReader()
+		{
+			this.InitIcons();
+			this.InitHIDDev();
 
-                // Send request
-                this.dev.Write(report);
+			// Start update Timer
+			this.updateTimer = new System.Timers.Timer(5000);
+			this.updateTimer.Elapsed += this.OnUpdate;
+			this.updateTimer.AutoReset = true;
+			this.updateTimer.Enabled = true;
+		}
 
-                // Prepare buffer for answer
-                byte[] reportIn = new byte[31]; //need 31 (by testing)
+		~Arctis7_BatteryReader()
+		{
+			this.updateTimer.Stop();
+			this.updateTimer.Dispose();
+			this.icon.Visible = false;
+			this.icon.Dispose();
+		}
 
-                // Read answer
-                this.dev.Read(reportIn);
-
-                if (reportIn[0] == 0x06 && reportIn[1] == batteryAddress)
-                {
-                    batteryCharge = reportIn[2];
-                    return true;
-                }
-            }
-            catch (Exception)
-            {   //if the read doesn't work, return false
-                return false;
-            }
-
-            return false;
-        }
-
-        private void InitIcons()
-        {
-            this.chargeIcons = new Icon[101];
-            for (int i = 0; i <= 100; i++)
-            {
-                try
-                {
-                    this.chargeIcons[i] = new Icon("Headset_Battery_Icons\\Icons\\" + i + ".ico");
-                }
-                catch (Exception)
-                {
-                    exit = true;
-                    Console.WriteLine("At least one Icon was not found (" + i + ".ico). Process exiting.");
-                    return;
-                }
-            }
-
-            this.icon = new NotifyIcon();
-            this.icon.Text = "Arctis 7 Battery Reader";
-            ContextMenu trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add("Refresh", refresh_tray_icon);
-            trayMenu.MenuItems.Add("Exit", exit_program);
-            this.icon.ContextMenu = trayMenu;
-
-            this.icon.Icon = this.chargeIcons[0];
-
-            this.icon.Visible = true;
-        }
+		private void OnUpdate(Object source, ElapsedEventArgs e)
+		{
+			//Get current batteryCharge
+			byte batteryCharge = 0;
+			this.ReadBattery(out batteryCharge);
 
 
-        private void InitHIDDev()
-        {
-            int devnumber = 0;
-            
-            this.dev = null;
+			//Update Tray Icon
+			if (batteryCharge >= 0 && batteryCharge <= 100)
+			{
+				this.icon.Icon = this.chargeIcons[batteryCharge];
+			}
+		}
 
-            var devices = HIDBrowse.Browse();
+		private bool ReadBattery(out byte batteryCharge)
+		{
+			batteryCharge = 0;
+			try
+			{
+				// Set message to send
+				byte[] report = new byte[32];
+				report[0] = 0x06;
+				report[1] = batteryAddress;
 
-            // Find all Steelseries Arcis 7 devices
-            var devs = (HIDBrowse.Browse()).FindAll(x => ((x.Pid == 0x1260 || x.Pid == 0x12ad) && x.Vid == 0x1038));
+				// Send request
+				this.dev.Write(report);
+
+				// Prepare buffer for answer
+				byte[] reportIn = new byte[31]; //need 31 (by testing)
+
+				// Read answer
+				this.dev.Read(reportIn);
+
+				if (reportIn[0] == 0x06 && reportIn[1] == batteryAddress)
+				{
+					batteryCharge = reportIn[2];
+					return true;
+				}
+			}
+			catch (Exception)
+			{   //if the read doesn't work, return false
+				return false;
+			}
+
+			return false;
+		}
+
+		private void InitIcons()
+		{
+			this.chargeIcons = new Icon[101];
+			for (int i = 0; i <= 100; i++)
+			{
+				try
+				{
+					this.chargeIcons[i] = new Icon("Headset_Battery_Icons\\Icons\\" + i + ".ico");
+				}
+				catch (Exception)
+				{
+					exit = true;
+					MessageBox.Show("At least one Icon was not found (" + i + ".ico). Process exiting.");
+					return;
+				}
+			}
+
+			this.icon = new NotifyIcon();
+			this.icon.Text = "Arctis 7 Battery Reader";
+			ContextMenu trayMenu = new ContextMenu();
+			trayMenu.MenuItems.Add("Refresh", refresh_tray_icon);
+			trayMenu.MenuItems.Add("Exit", exit_program);
+			this.icon.ContextMenu = trayMenu;
+
+			this.icon.Icon = this.chargeIcons[0];
+
+			this.icon.Visible = true;
+		}
 
 
-            if (devs.Count != 0)
-            {
-                byte batCharge = 0;
-                for(devnumber = 0; devnumber < devs.Count; devnumber++)
-                {
-                    this.dev = new HIDDev();
-                    dev.Open(devs.ElementAt(devnumber));
-                    if(this.ReadBattery(out batCharge))
-                    {
-                        break;
-                    }
-                }
+		private void InitHIDDev()
+		{
+			int devnumber = 0;
 
-                if (devnumber >= devs.Count)
-                {
-                    Console.WriteLine("None of the Arctis 7 HID Devices responded!");
-                    exit = true;
-                }
-                else
-                {   //if icons loaded correctly and everything else worked so far, exit is false
-                    if (!exit)
-                    {
-                        //Update Tray Icon
-                        this.icon.Icon = this.chargeIcons[batCharge];
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Arctis 7 HID Device not found!");
-                exit = true;
-            }
-        }
+			this.dev = null;
 
-        private void exit_program(object sender, EventArgs e)
-        {
-            Application.Exit();
-            exit = true;
-        }
+			var devices = HIDBrowse.Browse();
 
-        private void refresh_tray_icon(object sender, EventArgs e)
-        {
-            this.InitHIDDev();
-            //this.OnUpdate(null, null);
-        }
+			// Find all Steelseries Arcis 7 devices
+			var devs = (HIDBrowse.Browse()).FindAll(x => ((x.Pid == 0x1260 || x.Pid == 0x12ad) && x.Vid == 0x1038));
 
-    }
+			if (devs.Count != 0)
+			{
+				byte batCharge = 0;
+				for (devnumber = 0; devnumber < devs.Count; devnumber++)
+				{
+					this.dev = new HIDDev();
+					dev.Open(devs.ElementAt(devnumber));
+					if (this.ReadBattery(out batCharge))
+					{
+						break;
+					}
+				}
+
+				if (devnumber >= devs.Count)
+				{
+					MessageBox.Show("None of the Arctis 7 HID Devices responded!");
+					exit = true;
+				}
+				else
+				{   //if icons loaded correctly and everything else worked so far, exit is false
+					if (!exit)
+					{
+						//Update Tray Icon
+						this.icon.Icon = this.chargeIcons[batCharge];
+					}
+				}
+			}
+			else
+			{
+				MessageBox.Show("Arctis 7 HID Device not found!");
+				exit = true;
+			}
+		}
+
+		private void exit_program(object sender, EventArgs e)
+		{
+			Application.Exit();
+			exit = true;
+		}
+
+		private void refresh_tray_icon(object sender, EventArgs e)
+		{
+			this.InitHIDDev();
+			//this.OnUpdate(null, null);
+		}
+	}
 }

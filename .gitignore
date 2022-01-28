@@ -1,4 +1,10 @@
+# Visual studio files
 .vs/
+*.user
+
+# build folders
 bin/
 obj/
+
+# MightyHID dll
 MightyHID.dll
