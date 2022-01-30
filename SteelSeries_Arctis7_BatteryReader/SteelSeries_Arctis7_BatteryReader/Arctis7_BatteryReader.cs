@@ -91,6 +91,7 @@ namespace SteelSeries_Arctis7_BatteryReader
 			if (batteryCharge >= 0 && batteryCharge <= 100)
 			{
 				this.icon.Icon = this.chargeIcons[batteryCharge];
+				this.icon.Text = $"Arctis 7 Battery Reader ({batteryCharge}%)";
 			}
 		}
 
@@ -192,6 +193,7 @@ namespace SteelSeries_Arctis7_BatteryReader
 					{
 						//Update Tray Icon
 						this.icon.Icon = this.chargeIcons[batCharge];
+						this.icon.Text = $"Arctis 7 Battery Reader ({batCharge}%)";
 					}
 				}
 			}
