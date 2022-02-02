@@ -53,7 +53,7 @@ namespace Arctis_BatteryReader
 			{ 0x1260, "Arctis 7 2017" },
 			{ 0x12ad, "Arctis 7 2019" },
 			{ 0x1252, "Arctis Pro" },
-			{ 0x12b3, "Actris 1 Wireless" },
+			{ 0x12b3, "Arctis 1 Wireless" },
 			{ 0x12c2, "Arctis 9" }
 		};
 
