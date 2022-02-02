@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /YE ..\Headset_Battery_Icons\Icons $(OutDir)\Headset_Battery_Icons\Icons" />
+    <Exec Command="xcopy /YE ..\Headset_Battery_Icons\Icons\ $(OutDir)\Headset_Battery_Icons\Icons\" />
   </Target>
 
 </Project>
